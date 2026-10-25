@@ -186,6 +186,97 @@ paths:
       responses:
         '200':
           description: Refreshed access token
+  /api/v1/catalog/categories/:
+    get:
+      operationId: catalog_categories_list
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FabricCategory'
+          description: ''
+  /api/v1/catalog/rolls/:
+    get:
+      operationId: catalog_rolls_list
+      parameters:
+      - in: query
+        name: category
+        schema:
+          type: string
+      - in: query
+        name: color
+        schema:
+          type: string
+      - in: query
+        name: fabric_type
+        schema:
+          type: string
+      - in: query
+        name: max_gsm
+        schema:
+          type: integer
+      - in: query
+        name: max_price
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: min_gsm
+        schema:
+          type: integer
+      - in: query
+        name: min_yards
+        schema:
+          type: number
+          format: double
+      - in: query
+        name: search
+        schema:
+          type: string
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/FabricRollList'
+          description: ''
+  /api/v1/catalog/rolls/{roll_id}/:
+    get:
+      operationId: catalog_rolls_retrieve
+      parameters:
+      - in: path
+        name: roll_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - catalog
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FabricRollDetail'
+          description: ''
   /api/v1/companies/addresses/:
     get:
       operationId: companies_addresses_list
@@ -318,6 +409,167 @@ paths:
               schema:
                 $ref: '#/components/schemas/Company'
           description: ''
+  /api/v1/orders/:
+    get:
+      operationId: orders_list
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/orders/{order_id}/:
+    get:
+      operationId: orders_retrieve
+      parameters:
+      - in: path
+        name: order_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+          description: ''
+  /api/v1/orders/cart/:
+    get:
+      operationId: orders_cart_list
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItem'
+          description: ''
+    post:
+      operationId: orders_cart_create
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+          description: ''
+  /api/v1/orders/cart/items/:
+    get:
+      operationId: orders_cart_items_list
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CartItem'
+          description: ''
+    post:
+      operationId: orders_cart_items_create
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AddToCartRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CartItem'
+          description: ''
+  /api/v1/orders/cart/items/{item_id}/:
+    delete:
+      operationId: orders_cart_items_destroy
+      parameters:
+      - in: path
+        name: item_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - orders
+      security:
+      - jwtAuth: []
+      responses:
+        '204':
+          description: No response body
+  /api/v1/orders/checkout/:
+    post:
+      operationId: orders_checkout_create
+      tags:
+      - orders
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CheckoutRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderDetail'
+          description: ''
 components:
   schemas:
     ActionEnum:
@@ -330,6 +582,19 @@ components:
         * `APPROVE` - APPROVE
         * `REJECT` - REJECT
         * `SUSPEND` - SUSPEND
+    AddToCartRequest:
+      type: object
+      properties:
+        fabric_roll_id:
+          type: string
+          format: uuid
+        requested_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+      required:
+      - fabric_roll_id
+      - requested_yards
     AddressTypeEnum:
       enum:
       - FACTORY_PREMISES
@@ -342,6 +607,88 @@ components:
         * `WAREHOUSE` - Warehouse
         * `BILLING` - Billing Address
         * `DELIVERY` - Delivery Address
+    CartItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        fabric_roll:
+          type: string
+          format: uuid
+        roll_code:
+          type: string
+          readOnly: true
+        roll_title:
+          type: string
+          readOnly: true
+        roll_color_name:
+          type: string
+          readOnly: true
+        roll_color_hex:
+          type: string
+          readOnly: true
+        roll_gsm:
+          type: integer
+          readOnly: true
+        roll_width:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+          readOnly: true
+        roll_available_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        roll_min_cut:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+          readOnly: true
+        requested_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        item_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - fabric_roll
+      - id
+      - item_subtotal
+      - requested_yards
+      - roll_available_yards
+      - roll_code
+      - roll_color_hex
+      - roll_color_name
+      - roll_gsm
+      - roll_min_cut
+      - roll_title
+      - roll_width
+      - unit_price
+    CheckoutRequestRequest:
+      type: object
+      properties:
+        payment_method:
+          allOf:
+          - $ref: '#/components/schemas/PaymentMethodEnum'
+          default: BKASH
+        delivery_notes:
+          type: string
     Company:
       type: object
       properties:
@@ -568,6 +915,285 @@ components:
         * `ELIGIBLE` - Eligible
         * `ACTIVE` - Active
         * `BLOCKED` - Blocked
+    FabricCategory:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        description:
+          type: string
+        fabric_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/FabricType'
+          readOnly: true
+      required:
+      - fabric_types
+      - id
+      - name
+      - slug
+    FabricRollDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        roll_code:
+          type: string
+          maxLength: 50
+        title:
+          type: string
+          maxLength: 255
+        category_name:
+          type: string
+          readOnly: true
+        fabric_type_name:
+          type: string
+          readOnly: true
+        mill_name:
+          type: string
+          readOnly: true
+        mill_contact_phone:
+          type: string
+          readOnly: true
+        mill_location:
+          type: string
+          readOnly: true
+        composition:
+          type: string
+          maxLength: 255
+        gsm:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        width_inches:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        color_name:
+          type: string
+          maxLength: 100
+        color_hex:
+          type: string
+          maxLength: 7
+        pattern:
+          type: string
+          maxLength: 100
+        finish:
+          type: string
+          maxLength: 100
+        total_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        available_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        min_cut_length_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        price_per_yard:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        lot_batch_number:
+          type: string
+          maxLength: 100
+        quality_grade:
+          $ref: '#/components/schemas/QualityGradeEnum'
+        defect_notes:
+          type: string
+        status:
+          $ref: '#/components/schemas/StatusC50Enum'
+        is_sample_available:
+          type: boolean
+        sample_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/FabricRollImage'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - available_yards
+      - category_name
+      - color_name
+      - composition
+      - created_at
+      - fabric_type_name
+      - gsm
+      - id
+      - images
+      - mill_contact_phone
+      - mill_location
+      - mill_name
+      - price_per_yard
+      - roll_code
+      - title
+      - total_yards
+      - updated_at
+      - width_inches
+    FabricRollImage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        image_url:
+          oneOf:
+          - type: string
+            format: uri
+            maxLength: 500
+          - type: string
+            maxLength: 0
+        is_primary:
+          type: boolean
+        sort_order:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+      required:
+      - id
+    FabricRollList:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        roll_code:
+          type: string
+          maxLength: 50
+        title:
+          type: string
+          maxLength: 255
+        fabric_type_name:
+          type: string
+          readOnly: true
+        mill_name:
+          type: string
+          readOnly: true
+        mill_location:
+          type: string
+          readOnly: true
+        composition:
+          type: string
+          maxLength: 255
+        gsm:
+          type: integer
+          maximum: 9223372036854775807
+          minimum: -9223372036854775808
+          format: int64
+        width_inches:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,2})?$
+        color_name:
+          type: string
+          maxLength: 100
+        color_hex:
+          type: string
+          maxLength: 7
+        pattern:
+          type: string
+          maxLength: 100
+        finish:
+          type: string
+          maxLength: 100
+        available_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        min_cut_length_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        price_per_yard:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        quality_grade:
+          $ref: '#/components/schemas/QualityGradeEnum'
+        status:
+          $ref: '#/components/schemas/StatusC50Enum'
+        is_sample_available:
+          type: boolean
+        sample_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        primary_image:
+          type: string
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - available_yards
+      - color_name
+      - composition
+      - created_at
+      - fabric_type_name
+      - gsm
+      - id
+      - mill_location
+      - mill_name
+      - price_per_yard
+      - primary_image
+      - roll_code
+      - title
+      - width_inches
+    FabricType:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 100
+        slug:
+          type: string
+          maxLength: 100
+          pattern: ^[-a-zA-Z0-9_]+$
+        category_name:
+          type: string
+          readOnly: true
+        default_gsm_range:
+          type: string
+          maxLength: 50
+      required:
+      - category_name
+      - id
+      - name
+      - slug
     LoginRequest:
       type: object
       properties:
@@ -588,6 +1214,188 @@ components:
           type: string
           minLength: 1
           description: Optional refresh token if not using httpOnly cookie
+    OrderDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        order_number:
+          type: string
+          maxLength: 50
+        buyer_name:
+          type: string
+          readOnly: true
+        status:
+          $ref: '#/components/schemas/OrderDetailStatusEnum'
+        items_subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        platform_commission_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        cutting_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        delivery_fee:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        vat_tax_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        total_amount:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        currency:
+          type: string
+          maxLength: 5
+        payment_method:
+          type: string
+          maxLength: 30
+        delivery_notes:
+          type: string
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderItem'
+          readOnly: true
+        tracking_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderTrackingEvent'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - buyer_name
+      - created_at
+      - id
+      - items
+      - order_number
+      - tracking_events
+      - updated_at
+    OrderDetailStatusEnum:
+      enum:
+      - DRAFT
+      - REQUESTED
+      - QUOTED_CONFIRMED
+      - PAID_CREDIT_APPROVED
+      - PICKUP_SCHEDULED
+      - PICKED_UP
+      - AT_HUB
+      - CUTTING
+      - CUT_DONE
+      - PACKED
+      - OUT_FOR_DELIVERY
+      - DELIVERED
+      - COMPLETED
+      - CANCELLED
+      - DISPUTED
+      - REFUNDED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `REQUESTED` - Requested (Breakdown Hold Confirmed)
+        * `QUOTED_CONFIRMED` - Quoted & Confirmed
+        * `PAID_CREDIT_APPROVED` - Paid / Credit Approved
+        * `PICKUP_SCHEDULED` - Pickup Scheduled from Mill
+        * `PICKED_UP` - Picked Up from Mill
+        * `AT_HUB` - Received at Cutting Hub
+        * `CUTTING` - Cutting In Progress
+        * `CUT_DONE` - Precision Cut Completed
+        * `PACKED` - Packed & Barcoded
+        * `OUT_FOR_DELIVERY` - Out for Delivery
+        * `DELIVERED` - Delivered to Boutique
+        * `COMPLETED` - Completed & Settled
+        * `CANCELLED` - Cancelled
+        * `DISPUTED` - Disputed
+        * `REFUNDED` - Refunded
+    OrderItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        fabric_roll:
+          type: string
+          format: uuid
+        roll_code:
+          type: string
+          readOnly: true
+        roll_title:
+          type: string
+          readOnly: true
+        color_name:
+          type: string
+          readOnly: true
+        requested_yards:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,6}(?:\.\d{0,2})?$
+        unit_price:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        subtotal:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,8}(?:\.\d{0,2})?$
+        status:
+          type: string
+          maxLength: 20
+      required:
+      - color_name
+      - fabric_roll
+      - id
+      - requested_yards
+      - roll_code
+      - roll_title
+      - subtotal
+      - unit_price
+    OrderTrackingEvent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        from_status:
+          type: string
+          maxLength: 50
+        to_status:
+          type: string
+          maxLength: 50
+        title:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        location:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - id
+      - title
+      - to_status
     PatchedCompanyKYCUpdateRequest:
       type: object
       properties:
@@ -643,6 +1451,46 @@ components:
           nullable: true
         preferred_language:
           $ref: '#/components/schemas/UserProfilePreferredLanguageEnum'
+    PaymentMethodEnum:
+      enum:
+      - BKASH
+      - NAGAD
+      - SSLCOMMERZ
+      - B2B_CREDIT
+      - COD
+      type: string
+      description: |-
+        * `BKASH` - BKASH
+        * `NAGAD` - NAGAD
+        * `SSLCOMMERZ` - SSLCOMMERZ
+        * `B2B_CREDIT` - B2B_CREDIT
+        * `COD` - COD
+    QualityGradeEnum:
+      enum:
+      - GRADE_A
+      - GRADE_B
+      - SURPLUS_FRESH
+      - REMNANT
+      type: string
+      description: |-
+        * `GRADE_A` - Grade A (Export Surplus)
+        * `GRADE_B` - Grade B (Minor Blemishes)
+        * `SURPLUS_FRESH` - Fresh Surplus (Overrun)
+        * `REMNANT` - End-of-Run Remnant
+    StatusC50Enum:
+      enum:
+      - DRAFT
+      - ACTIVE
+      - RESERVED_PARTIAL
+      - SOLD_OUT
+      - ARCHIVED
+      type: string
+      description: |-
+        * `DRAFT` - Draft
+        * `ACTIVE` - Active / Listed
+        * `RESERVED_PARTIAL` - Reserved (Partial)
+        * `SOLD_OUT` - Sold Out
+        * `ARCHIVED` - Archived
     TokenRefreshRequestRequest:
       type: object
       properties:

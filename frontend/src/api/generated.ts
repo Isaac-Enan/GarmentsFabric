@@ -108,6 +108,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/catalog/categories/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_categories_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/rolls/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_rolls_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/catalog/rolls/{roll_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["catalog_rolls_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/companies/addresses/": {
         parameters: {
             query?: never;
@@ -176,6 +224,102 @@ export interface paths {
         patch: operations["companies_my_company_partial_update"];
         trace?: never;
     };
+    "/api/v1/orders/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["orders_list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/{order_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["orders_retrieve"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/cart/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["orders_cart_list"];
+        put?: never;
+        post: operations["orders_cart_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/cart/items/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["orders_cart_items_list"];
+        put?: never;
+        post: operations["orders_cart_items_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/cart/items/{item_id}/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete: operations["orders_cart_items_destroy"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/orders/checkout/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["orders_checkout_create"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -187,6 +331,12 @@ export interface components {
          * @enum {string}
          */
         ActionEnum: "APPROVE" | "REJECT" | "SUSPEND";
+        AddToCartRequest: {
+            /** Format: uuid */
+            fabric_roll_id: string;
+            /** Format: decimal */
+            requested_yards: string;
+        };
         /**
          * @description * `FACTORY_PREMISES` - Factory Premises
          *     * `WAREHOUSE` - Warehouse
@@ -195,6 +345,36 @@ export interface components {
          * @enum {string}
          */
         AddressTypeEnum: "FACTORY_PREMISES" | "WAREHOUSE" | "BILLING" | "DELIVERY";
+        CartItem: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            fabric_roll: string;
+            readonly roll_code: string;
+            readonly roll_title: string;
+            readonly roll_color_name: string;
+            readonly roll_color_hex: string;
+            readonly roll_gsm: number;
+            /** Format: decimal */
+            readonly roll_width: string;
+            /** Format: decimal */
+            readonly roll_available_yards: string;
+            /** Format: decimal */
+            readonly roll_min_cut: string;
+            /** Format: decimal */
+            requested_yards: string;
+            /** Format: decimal */
+            readonly unit_price: string;
+            /** Format: decimal */
+            readonly item_subtotal: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        CheckoutRequestRequest: {
+            /** @default BKASH */
+            payment_method: components["schemas"]["PaymentMethodEnum"];
+            delivery_notes?: string;
+        };
         Company: {
             /** Format: uuid */
             readonly id: string;
@@ -281,6 +461,102 @@ export interface components {
          * @enum {string}
          */
         CreditStatusEnum: "INELIGIBLE" | "ELIGIBLE" | "ACTIVE" | "BLOCKED";
+        FabricCategory: {
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            slug: string;
+            description?: string;
+            readonly fabric_types: components["schemas"]["FabricType"][];
+        };
+        FabricRollDetail: {
+            /** Format: uuid */
+            readonly id: string;
+            roll_code: string;
+            title: string;
+            readonly category_name: string;
+            readonly fabric_type_name: string;
+            readonly mill_name: string;
+            readonly mill_contact_phone: string;
+            readonly mill_location: string;
+            composition: string;
+            /** Format: int64 */
+            gsm: number;
+            /** Format: decimal */
+            width_inches: string;
+            color_name: string;
+            color_hex?: string;
+            pattern?: string;
+            finish?: string;
+            /** Format: decimal */
+            total_yards: string;
+            /** Format: decimal */
+            available_yards: string;
+            /** Format: decimal */
+            min_cut_length_yards?: string;
+            /** Format: decimal */
+            price_per_yard: string;
+            lot_batch_number?: string;
+            quality_grade?: components["schemas"]["QualityGradeEnum"];
+            defect_notes?: string;
+            status?: components["schemas"]["StatusC50Enum"];
+            is_sample_available?: boolean;
+            /** Format: decimal */
+            sample_price?: string;
+            readonly images: components["schemas"]["FabricRollImage"][];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        FabricRollImage: {
+            /** Format: uuid */
+            readonly id: string;
+            image_url?: string;
+            is_primary?: boolean;
+            /** Format: int64 */
+            sort_order?: number;
+        };
+        FabricRollList: {
+            /** Format: uuid */
+            readonly id: string;
+            roll_code: string;
+            title: string;
+            readonly fabric_type_name: string;
+            readonly mill_name: string;
+            readonly mill_location: string;
+            composition: string;
+            /** Format: int64 */
+            gsm: number;
+            /** Format: decimal */
+            width_inches: string;
+            color_name: string;
+            color_hex?: string;
+            pattern?: string;
+            finish?: string;
+            /** Format: decimal */
+            available_yards: string;
+            /** Format: decimal */
+            min_cut_length_yards?: string;
+            /** Format: decimal */
+            price_per_yard: string;
+            quality_grade?: components["schemas"]["QualityGradeEnum"];
+            status?: components["schemas"]["StatusC50Enum"];
+            is_sample_available?: boolean;
+            /** Format: decimal */
+            sample_price?: string;
+            readonly primary_image: string;
+            /** Format: date-time */
+            readonly created_at: string;
+        };
+        FabricType: {
+            /** Format: uuid */
+            readonly id: string;
+            name: string;
+            slug: string;
+            readonly category_name: string;
+            default_gsm_range?: string;
+        };
         LoginRequest: {
             email: string;
             password: string;
@@ -288,6 +564,81 @@ export interface components {
         LogoutRequestRequest: {
             /** @description Optional refresh token if not using httpOnly cookie */
             refresh?: string;
+        };
+        OrderDetail: {
+            /** Format: uuid */
+            readonly id: string;
+            order_number: string;
+            readonly buyer_name: string;
+            status?: components["schemas"]["OrderDetailStatusEnum"];
+            /** Format: decimal */
+            items_subtotal?: string;
+            /** Format: decimal */
+            platform_commission_fee?: string;
+            /** Format: decimal */
+            cutting_fee?: string;
+            /** Format: decimal */
+            delivery_fee?: string;
+            /** Format: decimal */
+            vat_tax_amount?: string;
+            /** Format: decimal */
+            total_amount?: string;
+            currency?: string;
+            payment_method?: string;
+            delivery_notes?: string;
+            readonly items: components["schemas"]["OrderItem"][];
+            readonly tracking_events: components["schemas"]["OrderTrackingEvent"][];
+            /** Format: date-time */
+            readonly created_at: string;
+            /** Format: date-time */
+            readonly updated_at: string;
+        };
+        /**
+         * @description * `DRAFT` - Draft
+         *     * `REQUESTED` - Requested (Breakdown Hold Confirmed)
+         *     * `QUOTED_CONFIRMED` - Quoted & Confirmed
+         *     * `PAID_CREDIT_APPROVED` - Paid / Credit Approved
+         *     * `PICKUP_SCHEDULED` - Pickup Scheduled from Mill
+         *     * `PICKED_UP` - Picked Up from Mill
+         *     * `AT_HUB` - Received at Cutting Hub
+         *     * `CUTTING` - Cutting In Progress
+         *     * `CUT_DONE` - Precision Cut Completed
+         *     * `PACKED` - Packed & Barcoded
+         *     * `OUT_FOR_DELIVERY` - Out for Delivery
+         *     * `DELIVERED` - Delivered to Boutique
+         *     * `COMPLETED` - Completed & Settled
+         *     * `CANCELLED` - Cancelled
+         *     * `DISPUTED` - Disputed
+         *     * `REFUNDED` - Refunded
+         * @enum {string}
+         */
+        OrderDetailStatusEnum: "DRAFT" | "REQUESTED" | "QUOTED_CONFIRMED" | "PAID_CREDIT_APPROVED" | "PICKUP_SCHEDULED" | "PICKED_UP" | "AT_HUB" | "CUTTING" | "CUT_DONE" | "PACKED" | "OUT_FOR_DELIVERY" | "DELIVERED" | "COMPLETED" | "CANCELLED" | "DISPUTED" | "REFUNDED";
+        OrderItem: {
+            /** Format: uuid */
+            readonly id: string;
+            /** Format: uuid */
+            fabric_roll: string;
+            readonly roll_code: string;
+            readonly roll_title: string;
+            readonly color_name: string;
+            /** Format: decimal */
+            requested_yards: string;
+            /** Format: decimal */
+            unit_price: string;
+            /** Format: decimal */
+            subtotal: string;
+            status?: string;
+        };
+        OrderTrackingEvent: {
+            /** Format: uuid */
+            readonly id: string;
+            from_status?: string;
+            to_status: string;
+            title: string;
+            description?: string;
+            location?: string;
+            /** Format: date-time */
+            readonly created_at: string;
         };
         PatchedCompanyKYCUpdateRequest: {
             name?: string;
@@ -312,6 +663,32 @@ export interface components {
             avatar?: string | null;
             preferred_language?: components["schemas"]["UserProfilePreferredLanguageEnum"];
         };
+        /**
+         * @description * `BKASH` - BKASH
+         *     * `NAGAD` - NAGAD
+         *     * `SSLCOMMERZ` - SSLCOMMERZ
+         *     * `B2B_CREDIT` - B2B_CREDIT
+         *     * `COD` - COD
+         * @enum {string}
+         */
+        PaymentMethodEnum: "BKASH" | "NAGAD" | "SSLCOMMERZ" | "B2B_CREDIT" | "COD";
+        /**
+         * @description * `GRADE_A` - Grade A (Export Surplus)
+         *     * `GRADE_B` - Grade B (Minor Blemishes)
+         *     * `SURPLUS_FRESH` - Fresh Surplus (Overrun)
+         *     * `REMNANT` - End-of-Run Remnant
+         * @enum {string}
+         */
+        QualityGradeEnum: "GRADE_A" | "GRADE_B" | "SURPLUS_FRESH" | "REMNANT";
+        /**
+         * @description * `DRAFT` - Draft
+         *     * `ACTIVE` - Active / Listed
+         *     * `RESERVED_PARTIAL` - Reserved (Partial)
+         *     * `SOLD_OUT` - Sold Out
+         *     * `ARCHIVED` - Archived
+         * @enum {string}
+         */
+        StatusC50Enum: "DRAFT" | "ACTIVE" | "RESERVED_PARTIAL" | "SOLD_OUT" | "ARCHIVED";
         TokenRefreshRequestRequest: {
             /** @description Optional refresh token if not using httpOnly cookie */
             refresh?: string;
@@ -593,6 +970,74 @@ export interface operations {
             };
         };
     };
+    catalog_categories_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabricCategory"][];
+                };
+            };
+        };
+    };
+    catalog_rolls_list: {
+        parameters: {
+            query?: {
+                category?: string;
+                color?: string;
+                fabric_type?: string;
+                max_gsm?: number;
+                max_price?: number;
+                min_gsm?: number;
+                min_yards?: number;
+                search?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabricRollList"][];
+                };
+            };
+        };
+    };
+    catalog_rolls_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                roll_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FabricRollDetail"];
+                };
+            };
+        };
+    };
     companies_addresses_list: {
         parameters: {
             query?: never;
@@ -723,6 +1168,179 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Company"];
+                };
+            };
+        };
+    };
+    orders_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"][];
+                };
+            };
+        };
+    };
+    orders_retrieve: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                order_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
+                };
+            };
+        };
+    };
+    orders_cart_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartItem"][];
+                };
+            };
+        };
+    };
+    orders_cart_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddToCartRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AddToCartRequest"];
+                "multipart/form-data": components["schemas"]["AddToCartRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartItem"];
+                };
+            };
+        };
+    };
+    orders_cart_items_list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartItem"][];
+                };
+            };
+        };
+    };
+    orders_cart_items_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AddToCartRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["AddToCartRequest"];
+                "multipart/form-data": components["schemas"]["AddToCartRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CartItem"];
+                };
+            };
+        };
+    };
+    orders_cart_items_destroy: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                item_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No response body */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    orders_checkout_create: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["CheckoutRequestRequest"];
+                "application/x-www-form-urlencoded": components["schemas"]["CheckoutRequestRequest"];
+                "multipart/form-data": components["schemas"]["CheckoutRequestRequest"];
+            };
+        };
+        responses: {
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OrderDetail"];
                 };
             };
         };

@@ -10,6 +10,7 @@ import { RegisterPage } from "@/features/auth/pages/RegisterPage";
 import { PendingApprovalPage } from "@/features/auth/pages/PendingApprovalPage";
 
 import { CatalogBrowsePage } from "@/features/catalog/pages/CatalogBrowsePage";
+import { FabricDetailPage } from "@/features/catalog/pages/FabricDetailPage";
 import { FactoryDashboardPage } from "@/features/factory-dashboard/pages/FactoryDashboardPage";
 import { BuyerOrdersPage } from "@/features/buyer-dashboard/pages/BuyerOrdersPage";
 import { HubQueuePage } from "@/features/hub/pages/HubQueuePage";
@@ -39,6 +40,10 @@ export const router = createBrowserRouter([
       {
         path: "catalog",
         element: <CatalogBrowsePage />,
+      },
+      {
+        path: "catalog/:id",
+        element: <FabricDetailPage />,
       },
       {
         path: "how-it-works",
