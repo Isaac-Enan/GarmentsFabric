@@ -1,0 +1,54 @@
+{
+  "nav": {
+    "browse": "Browse Fabrics",
+    "howItWorks": "How It Works",
+    "about": "About",
+    "login": "Sign In",
+    "register": "Register",
+    "dashboard": "Dashboard",
+    "logout": "Sign Out",
+    "pendingApproval": "Verification Pending",
+    "cart": "Cart",
+    "language": "Language"
+  },
+  "hero": {
+    "badge": "Bangladesh's #1 Surplus Fabric Marketplace",
+    "title": "Turn RMG Factory Surplus into High-Value Yardage",
+    "subtitle": "Connecting Bangladesh's garment manufacturers holding export-quality deadstock rolls with boutique owners, startups, and designers seeking small-batch custom yardage.",
+    "ctaBuyer": "Find Fabric Rolls",
+    "ctaFactory": "List Factory Surplus",
+    "statsRolls": "Active Surplus Rolls",
+    "statsYards": "Export Yards Listed",
+    "statsFactories": "Partner Garment Mills",
+    "statsSaving": "Cost Reduction for Boutiques"
+  },
+  "auth": {
+    "signInTitle": "Welcome Back to FabriLink",
+    "signInSubtitle": "Sign in to manage your fabric orders or factory listings",
+    "signUpTitle": "Create your FabriLink Account",
+    "signUpSubtitle": "Choose your primary business role to begin trading",
+    "roleFactory": "Garment Factory (Seller)",
+    "roleBuyer": "Boutique / Brand / Designer (Buyer)",
+    "emailLabel": "Email Address",
+    "phoneLabel": "Phone Number (+880)",
+    "passwordLabel": "Password",
+    "companyNameLabel": "Company / Factory / Boutique Name",
+    "firstNameLabel": "First Name",
+    "lastNameLabel": "Last Name",
+    "submitSignIn": "Sign In",
+    "submitSignUp": "Create Account",
+    "noAccount": "Don't have an account?",
+    "haveAccount": "Already registered?",
+    "pendingTitle": "Company Verification Under Review",
+    "pendingMessage": "Thank you for registering. Our verification team is validating your Trade License and TIN/BIN credentials. You will receive an SMS and email notification once approved.",
+    "backHome": "Back to Home"
+  },
+  "common": {
+    "loading": "Loading...",
+    "save": "Save Changes",
+    "cancel": "Cancel",
+    "status": "Status",
+    "actions": "Actions",
+    "viewDetails": "View Details"
+  }
+}

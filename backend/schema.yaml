@@ -1,0 +1,842 @@
+openapi: 3.0.3
+info:
+  title: FabriLink B2B Marketplace API
+  version: 1.0.0
+  description: Production API connecting garment factories with surplus fabric rolls
+    to small boutiques and fashion startups in Bangladesh.
+paths:
+  /api/v1/auth/login/:
+    post:
+      operationId: auth_login_create
+      description: Authenticate user with email and password.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/auth/logout/:
+    post:
+      operationId: auth_logout_create
+      description: Blacklist refresh token and clear authentication cookie.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/LogoutRequestRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          description: Logged out successfully
+  /api/v1/auth/me/:
+    get:
+      operationId: auth_me_retrieve
+      description: Get current authenticated user profile, roles, and company.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    patch:
+      operationId: auth_me_partial_update
+      description: Update profile attributes for current user.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/auth/profile/:
+    get:
+      operationId: auth_profile_retrieve
+      description: Get current authenticated user profile, roles, and company.
+      tags:
+      - auth
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+    patch:
+      operationId: auth_profile_partial_update
+      description: Update profile attributes for current user.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUserProfileRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/auth/register/:
+    post:
+      operationId: auth_register_create
+      description: Register a new factory or buyer account.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserDetail'
+          description: ''
+  /api/v1/auth/token/refresh/:
+    post:
+      operationId: auth_token_refresh_create
+      description: Rotate refresh token from cookie and issue new access token.
+      tags:
+      - auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequestRequest'
+      security:
+      - jwtAuth: []
+      - {}
+      responses:
+        '200':
+          description: Refreshed access token
+  /api/v1/companies/addresses/:
+    get:
+      operationId: companies_addresses_list
+      tags:
+      - companies
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CompanyAddress'
+          description: ''
+    post:
+      operationId: companies_addresses_create
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyAddressRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyAddressRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyAddressRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompanyAddress'
+          description: ''
+  /api/v1/companies/admin/{company_id}/verify/:
+    post:
+      operationId: companies_admin_verify_create
+      description: Approve or reject company KYC
+      parameters:
+      - in: path
+        name: company_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompanyVerificationActionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CompanyVerificationActionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CompanyVerificationActionRequest'
+        required: true
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+  /api/v1/companies/admin/kyc-queue/:
+    get:
+      operationId: companies_admin_kyc_queue_list
+      description: List companies pending KYC approval
+      tags:
+      - companies
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Company'
+          description: ''
+  /api/v1/companies/my-company/:
+    get:
+      operationId: companies_my_company_retrieve
+      description: Get current user company details and verification status
+      tags:
+      - companies
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+    patch:
+      operationId: companies_my_company_partial_update
+      description: Update company KYC details and documents
+      tags:
+      - companies
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyKYCUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyKYCUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedCompanyKYCUpdateRequest'
+      security:
+      - jwtAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Company'
+          description: ''
+components:
+  schemas:
+    ActionEnum:
+      enum:
+      - APPROVE
+      - REJECT
+      - SUSPEND
+      type: string
+      description: |-
+        * `APPROVE` - APPROVE
+        * `REJECT` - REJECT
+        * `SUSPEND` - SUSPEND
+    AddressTypeEnum:
+      enum:
+      - FACTORY_PREMISES
+      - WAREHOUSE
+      - BILLING
+      - DELIVERY
+      type: string
+      description: |-
+        * `FACTORY_PREMISES` - Factory Premises
+        * `WAREHOUSE` - Warehouse
+        * `BILLING` - Billing Address
+        * `DELIVERY` - Delivery Address
+    Company:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        company_type:
+          $ref: '#/components/schemas/CompanyTypeEnum'
+        trade_license_number:
+          type: string
+          maxLength: 100
+        tin_number:
+          type: string
+          maxLength: 50
+        bin_number:
+          type: string
+          maxLength: 50
+        trade_license_file:
+          type: string
+          format: uri
+          nullable: true
+        tin_file:
+          type: string
+          format: uri
+          nullable: true
+        bin_file:
+          type: string
+          format: uri
+          nullable: true
+        verification_status:
+          allOf:
+          - $ref: '#/components/schemas/VerificationStatusEnum'
+          readOnly: true
+        rejection_reason:
+          type: string
+          readOnly: true
+        contact_email:
+          type: string
+          format: email
+          maxLength: 254
+        contact_phone:
+          type: string
+          maxLength: 20
+        credit_limit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+          readOnly: true
+        credit_terms_days:
+          type: integer
+          readOnly: true
+        credit_status:
+          allOf:
+          - $ref: '#/components/schemas/CreditStatusEnum'
+          readOnly: true
+        addresses:
+          type: array
+          items:
+            $ref: '#/components/schemas/CompanyAddress'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - addresses
+      - company_type
+      - contact_email
+      - contact_phone
+      - created_at
+      - credit_limit
+      - credit_status
+      - credit_terms_days
+      - id
+      - name
+      - rejection_reason
+      - updated_at
+      - verification_status
+    CompanyAddress:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        company:
+          type: string
+          format: uuid
+        address_type:
+          $ref: '#/components/schemas/AddressTypeEnum'
+        division:
+          type: string
+          maxLength: 50
+        district:
+          type: string
+          maxLength: 50
+        upazila_thana:
+          type: string
+          maxLength: 100
+        street_address:
+          type: string
+        postal_code:
+          type: string
+          maxLength: 20
+        landmark:
+          type: string
+          maxLength: 255
+        gps_lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        gps_lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_default:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - address_type
+      - company
+      - created_at
+      - district
+      - division
+      - id
+      - postal_code
+      - street_address
+      - upazila_thana
+    CompanyAddressRequest:
+      type: object
+      properties:
+        company:
+          type: string
+          format: uuid
+        address_type:
+          $ref: '#/components/schemas/AddressTypeEnum'
+        division:
+          type: string
+          minLength: 1
+          maxLength: 50
+        district:
+          type: string
+          minLength: 1
+          maxLength: 50
+        upazila_thana:
+          type: string
+          minLength: 1
+          maxLength: 100
+        street_address:
+          type: string
+          minLength: 1
+        postal_code:
+          type: string
+          minLength: 1
+          maxLength: 20
+        landmark:
+          type: string
+          maxLength: 255
+        gps_lat:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        gps_lng:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,3}(?:\.\d{0,6})?$
+          nullable: true
+        is_default:
+          type: boolean
+      required:
+      - address_type
+      - company
+      - district
+      - division
+      - postal_code
+      - street_address
+      - upazila_thana
+    CompanyTypeEnum:
+      enum:
+      - FACTORY
+      - BUYER
+      type: string
+      description: |-
+        * `FACTORY` - Garment Factory / Mill
+        * `BUYER` - Boutique / Brand / Startup
+    CompanyVerificationActionRequest:
+      type: object
+      properties:
+        action:
+          $ref: '#/components/schemas/ActionEnum'
+        rejection_reason:
+          type: string
+        credit_limit:
+          type: string
+          format: decimal
+          pattern: ^-?\d{0,10}(?:\.\d{0,2})?$
+        credit_terms_days:
+          type: integer
+      required:
+      - action
+    CreditStatusEnum:
+      enum:
+      - INELIGIBLE
+      - ELIGIBLE
+      - ACTIVE
+      - BLOCKED
+      type: string
+      description: |-
+        * `INELIGIBLE` - Ineligible
+        * `ELIGIBLE` - Eligible
+        * `ACTIVE` - Active
+        * `BLOCKED` - Blocked
+    LoginRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          minLength: 1
+        password:
+          type: string
+          writeOnly: true
+          minLength: 1
+      required:
+      - email
+      - password
+    LogoutRequestRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+          description: Optional refresh token if not using httpOnly cookie
+    PatchedCompanyKYCUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        trade_license_number:
+          type: string
+          maxLength: 100
+        tin_number:
+          type: string
+          maxLength: 50
+        bin_number:
+          type: string
+          maxLength: 50
+        trade_license_file:
+          type: string
+          format: binary
+          nullable: true
+        tin_file:
+          type: string
+          format: binary
+          nullable: true
+        bin_file:
+          type: string
+          format: binary
+          nullable: true
+        contact_email:
+          type: string
+          format: email
+          minLength: 1
+          maxLength: 254
+        contact_phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+    PatchedUserProfileRequest:
+      type: object
+      properties:
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        designation:
+          type: string
+          maxLength: 100
+        avatar:
+          type: string
+          format: binary
+          nullable: true
+        preferred_language:
+          $ref: '#/components/schemas/UserProfilePreferredLanguageEnum'
+    TokenRefreshRequestRequest:
+      type: object
+      properties:
+        refresh:
+          type: string
+          minLength: 1
+          description: Optional refresh token if not using httpOnly cookie
+    UserCompanySummary:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        company_type:
+          type: string
+        verification_status:
+          type: string
+        credit_limit:
+          type: string
+      required:
+      - company_type
+      - credit_limit
+      - id
+      - name
+      - verification_status
+    UserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        email:
+          type: string
+          format: email
+          maxLength: 254
+        phone:
+          type: string
+          maxLength: 20
+        role:
+          $ref: '#/components/schemas/UserDetailRoleEnum'
+        is_verified:
+          type: boolean
+          readOnly: true
+        is_active:
+          type: boolean
+          readOnly: true
+        profile:
+          allOf:
+          - $ref: '#/components/schemas/UserProfile'
+          readOnly: true
+        company:
+          allOf:
+          - $ref: '#/components/schemas/UserCompanySummary'
+          readOnly: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - company
+      - date_joined
+      - email
+      - id
+      - is_active
+      - is_verified
+      - phone
+      - profile
+    UserDetailRoleEnum:
+      enum:
+      - FACTORY
+      - BUYER
+      - HUB_STAFF
+      - ADMIN
+      type: string
+      description: |-
+        * `FACTORY` - Garment Factory (Seller)
+        * `BUYER` - Boutique / Brand / Startup (Buyer)
+        * `HUB_STAFF` - FabriLink Hub Staff
+        * `ADMIN` - Central Admin
+    UserProfile:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        full_name:
+          type: string
+          readOnly: true
+        designation:
+          type: string
+          maxLength: 100
+        avatar:
+          type: string
+          format: uri
+          nullable: true
+        preferred_language:
+          $ref: '#/components/schemas/UserProfilePreferredLanguageEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - full_name
+      - id
+      - updated_at
+    UserProfilePreferredLanguageEnum:
+      enum:
+      - bn
+      - en
+      type: string
+      description: |-
+        * `bn` - Bangla
+        * `en` - English
+    UserRegistrationPreferredLanguageEnum:
+      enum:
+      - bn
+      - en
+      type: string
+      description: |-
+        * `bn` - bn
+        * `en` - en
+    UserRegistrationRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+          minLength: 1
+        phone:
+          type: string
+          minLength: 1
+          maxLength: 20
+        password:
+          type: string
+          writeOnly: true
+          minLength: 8
+        role:
+          $ref: '#/components/schemas/UserRegistrationRoleEnum'
+        company_name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        first_name:
+          type: string
+          maxLength: 100
+        last_name:
+          type: string
+          maxLength: 100
+        preferred_language:
+          allOf:
+          - $ref: '#/components/schemas/UserRegistrationPreferredLanguageEnum'
+          default: bn
+      required:
+      - company_name
+      - email
+      - password
+      - phone
+      - role
+    UserRegistrationRoleEnum:
+      enum:
+      - FACTORY
+      - BUYER
+      type: string
+      description: |-
+        * `FACTORY` - FACTORY
+        * `BUYER` - BUYER
+    VerificationStatusEnum:
+      enum:
+      - PENDING
+      - APPROVED
+      - REJECTED
+      - SUSPENDED
+      type: string
+      description: |-
+        * `PENDING` - Pending Review
+        * `APPROVED` - Approved
+        * `REJECTED` - Rejected
+        * `SUSPENDED` - Suspended
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
