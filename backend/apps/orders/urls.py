@@ -6,6 +6,7 @@ from .views import (
     CheckoutView,
     OrderDetailView,
     OrderListView,
+    OrderStatusUpdateView,
 )
 
 app_name = "orders"
@@ -17,4 +18,5 @@ urlpatterns = [
     path("checkout/", CheckoutView.as_view(), name="checkout"),
     path("", OrderListView.as_view(), name="order_list"),
     path("<uuid:order_id>/", OrderDetailView.as_view(), name="order_detail"),
+    path("<uuid:order_id>/status/", OrderStatusUpdateView.as_view(), name="order_status_update"),
 ]

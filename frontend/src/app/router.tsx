@@ -11,6 +11,7 @@ import { PendingApprovalPage } from "@/features/auth/pages/PendingApprovalPage";
 
 import { CatalogBrowsePage } from "@/features/catalog/pages/CatalogBrowsePage";
 import { FabricDetailPage } from "@/features/catalog/pages/FabricDetailPage";
+import { FactoryStorePage } from "@/features/catalog/pages/FactoryStorePage";
 import { FactoryDashboardPage } from "@/features/factory-dashboard/pages/FactoryDashboardPage";
 import { BuyerOrdersPage } from "@/features/buyer-dashboard/pages/BuyerOrdersPage";
 import { HubQueuePage } from "@/features/hub/pages/HubQueuePage";
@@ -44,6 +45,14 @@ export const router = createBrowserRouter([
       {
         path: "catalog/:id",
         element: <FabricDetailPage />,
+      },
+      {
+        path: "stores/:id",
+        element: <FactoryStorePage />,
+      },
+      {
+        path: "mills/:id",
+        element: <FactoryStorePage />,
       },
       {
         path: "how-it-works",
@@ -87,6 +96,10 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "orders",
+        element: <BuyerOrdersPage />,
+      },
+      {
+        path: "profiles",
         element: <BuyerOrdersPage />,
       },
       {

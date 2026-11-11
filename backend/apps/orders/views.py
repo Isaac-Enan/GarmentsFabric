@@ -8,7 +8,7 @@ from rest_framework.views import APIView
 from apps.companies.selectors import get_user_primary_company
 from common.exceptions import NotFoundError
 
-from .models import Cart, CartItem, Order
+from .models import Cart, CartItem, Order, OrderStatusChoices, OrderTrackingEvent
 from .serializers import (
     AddToCartSerializer,
     CartItemSerializer,
@@ -120,19 +120,32 @@ class OrderListView(APIView):
     @extend_schema(responses={200: OrderDetailSerializer(many=True)})
     def get(self, request):
         company = get_user_primary_company(request.user.id)
-        if not company:
-            return Response({"success": True, "data": []})
+        status_filter = request.query_params.get("status")
 
-        if company.company_type == "FACTORY":
+        if request.user.role in ["ADMIN", "HUB_STAFF"] or request.user.is_staff:
+            orders = (
+                Order.objects.all()
+                .prefetch_related("items", "tracking_events")
+                .order_by("-created_at")
+            )
+        elif not company:
+            return Response({"success": True, "data": []})
+        elif company.company_type == "FACTORY":
             orders = (
                 Order.objects.filter(items__fabric_roll__factory=company)
                 .distinct()
                 .prefetch_related("items", "tracking_events")
+                .order_by("-created_at")
             )
         else:
-            orders = Order.objects.filter(buyer=company).prefetch_related(
-                "items", "tracking_events"
+            orders = (
+                Order.objects.filter(buyer=company)
+                .prefetch_related("items", "tracking_events")
+                .order_by("-created_at")
             )
+
+        if status_filter:
+            orders = orders.filter(status=status_filter)
 
         serializer = OrderDetailSerializer(orders, many=True)
         return Response({"success": True, "data": serializer.data})
@@ -149,3 +162,51 @@ class OrderDetailView(APIView):
         if not order:
             raise NotFoundError("Order not found.")
         return Response({"success": True, "data": OrderDetailSerializer(order).data})
+
+
+class OrderStatusUpdateView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def patch(self, request, order_id):
+        order = (
+            Order.objects.filter(id=order_id).prefetch_related("items", "tracking_events").first()
+        )
+        if not order:
+            raise NotFoundError("Order not found.")
+
+        new_status = request.data.get("status")
+        notes = request.data.get("notes", "")
+        location = request.data.get("location", "Tejgaon Central Hub")
+
+        if new_status and new_status in OrderStatusChoices.values:
+            from_status = order.status
+            order.status = new_status
+            order.save()
+
+            status_labels = {
+                OrderStatusChoices.PICKUP_SCHEDULED: "Pickup Scheduled from Mill",
+                OrderStatusChoices.PICKED_UP: "Picked Up from Mill",
+                OrderStatusChoices.AT_HUB: "Received at Central Hub & Scanned",
+                OrderStatusChoices.CUTTING: "Precision Machine Cutting in Progress",
+                OrderStatusChoices.CUT_DONE: "Precision Cut Completed",
+                OrderStatusChoices.PACKED: "Packed & Barcode Tag Attached",
+                OrderStatusChoices.OUT_FOR_DELIVERY: "Handed to Courier (Out for Delivery)",
+                OrderStatusChoices.DELIVERED: "Delivered to Boutique",
+                OrderStatusChoices.COMPLETED: "Completed & Settled",
+            }
+            title = status_labels.get(new_status, f"Order status updated to {new_status}")
+            desc = notes or f"Order transitioned from {from_status} to {new_status}."
+
+            OrderTrackingEvent.objects.create(
+                order=order,
+                from_status=from_status,
+                to_status=new_status,
+                title=title,
+                description=desc,
+                location=location,
+            )
+
+        fresh_order = (
+            Order.objects.filter(id=order_id).prefetch_related("items", "tracking_events").first()
+        )
+        return Response({"success": True, "data": OrderDetailSerializer(fresh_order).data})

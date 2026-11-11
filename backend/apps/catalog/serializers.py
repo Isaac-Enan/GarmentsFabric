@@ -27,9 +27,16 @@ class FabricCategorySerializer(serializers.ModelSerializer):
 
 class FabricRollListSerializer(serializers.ModelSerializer):
     mill_name = serializers.CharField(source="factory.name", read_only=True)
+    factory_id = serializers.CharField(source="factory.id", read_only=True)
     mill_location = serializers.SerializerMethodField()
     fabric_type_name = serializers.CharField(source="fabric_type.name", read_only=True)
     primary_image = serializers.SerializerMethodField()
+    target_buyer_name = serializers.CharField(
+        source="target_buyer.name", read_only=True, allow_null=True
+    )
+    target_buyer_id = serializers.CharField(
+        source="target_buyer.id", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = FabricRoll
@@ -39,6 +46,7 @@ class FabricRollListSerializer(serializers.ModelSerializer):
             "title",
             "fabric_type_name",
             "mill_name",
+            "factory_id",
             "mill_location",
             "composition",
             "gsm",
@@ -55,6 +63,10 @@ class FabricRollListSerializer(serializers.ModelSerializer):
             "is_sample_available",
             "sample_price",
             "primary_image",
+            "target_buyer_id",
+            "target_buyer_name",
+            "is_custom_profile",
+            "buyer_spec_notes",
             "created_at",
         ]
 
@@ -72,11 +84,18 @@ class FabricRollListSerializer(serializers.ModelSerializer):
 
 class FabricRollDetailSerializer(serializers.ModelSerializer):
     mill_name = serializers.CharField(source="factory.name", read_only=True)
+    factory_id = serializers.CharField(source="factory.id", read_only=True)
     mill_contact_phone = serializers.CharField(source="factory.contact_phone", read_only=True)
     mill_location = serializers.SerializerMethodField()
     fabric_type_name = serializers.CharField(source="fabric_type.name", read_only=True)
     category_name = serializers.CharField(source="fabric_type.category.name", read_only=True)
     images = FabricRollImageSerializer(many=True, read_only=True)
+    target_buyer_name = serializers.CharField(
+        source="target_buyer.name", read_only=True, allow_null=True
+    )
+    target_buyer_id = serializers.CharField(
+        source="target_buyer.id", read_only=True, allow_null=True
+    )
 
     class Meta:
         model = FabricRoll
@@ -87,6 +106,7 @@ class FabricRollDetailSerializer(serializers.ModelSerializer):
             "category_name",
             "fabric_type_name",
             "mill_name",
+            "factory_id",
             "mill_contact_phone",
             "mill_location",
             "composition",
@@ -106,6 +126,10 @@ class FabricRollDetailSerializer(serializers.ModelSerializer):
             "status",
             "is_sample_available",
             "sample_price",
+            "target_buyer_id",
+            "target_buyer_name",
+            "is_custom_profile",
+            "buyer_spec_notes",
             "images",
             "created_at",
             "updated_at",
@@ -115,3 +139,42 @@ class FabricRollDetailSerializer(serializers.ModelSerializer):
         if obj.location_address:
             return f"{obj.location_address.street_address}, {obj.location_address.district}, {obj.location_address.division}"
         return "Tejgaon / Gazipur RMG Zone, Bangladesh"
+
+
+class FabricRollCreateSerializer(serializers.ModelSerializer):
+    image_url = serializers.CharField(required=False, allow_blank=True)
+    target_buyer_id = serializers.UUIDField(required=False, allow_null=True)
+
+    class Meta:
+        model = FabricRoll
+        fields = [
+            "title",
+            "fabric_type",
+            "composition",
+            "gsm",
+            "width_inches",
+            "color_name",
+            "color_hex",
+            "pattern",
+            "finish",
+            "total_yards",
+            "available_yards",
+            "min_cut_length_yards",
+            "price_per_yard",
+            "lot_batch_number",
+            "quality_grade",
+            "defect_notes",
+            "is_sample_available",
+            "sample_price",
+            "image_url",
+            "target_buyer_id",
+            "is_custom_profile",
+            "buyer_spec_notes",
+        ]
+        extra_kwargs = {
+            "available_yards": {"required": False},
+            "min_cut_length_yards": {"required": False},
+            "sample_price": {"required": False},
+            "is_custom_profile": {"required": False},
+            "buyer_spec_notes": {"required": False},
+        }

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
   Layers,
@@ -9,6 +9,7 @@ import {
   User as UserIcon,
   LogOut,
   ShoppingBag,
+  ShoppingCart,
   Factory,
   Scissors,
   ShieldCheck,
@@ -16,13 +17,36 @@ import {
 } from "lucide-react";
 import { useAuthStore } from "@/features/auth/store";
 import { authApi } from "@/features/auth/api";
+import { apiClient } from "@/api/client";
+import { CartDrawer } from "@/components/cart/CartDrawer";
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user, isAuthenticated, clearAuth } = useAuthStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [cartOpen, setCartOpen] = useState(false);
+  const [cartItemCount, setCartItemCount] = useState<number>(0);
+
+  const fetchCartCount = async () => {
+    if (!isAuthenticated || user?.role !== "BUYER") {
+      setCartItemCount(0);
+      return;
+    }
+    try {
+      const res = await apiClient.get("/orders/cart/");
+      const items = res.data?.data?.items || [];
+      setCartItemCount(items.length);
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
+    fetchCartCount();
+  }, [isAuthenticated, user?.role, location.pathname]);
 
   const toggleLanguage = () => {
     const nextLang = i18n.language === "bn" ? "en" : "bn";
@@ -56,126 +80,155 @@ export const Navbar: React.FC = () => {
   };
 
   return (
-    <header className="sticky top-0 z-50 glass border-b border-border/40 transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
-              <Layers className="w-6 h-6" />
-            </div>
-            <div className="flex flex-col">
-              <span className="font-extrabold text-xl tracking-tight text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                FabriLink
-              </span>
-              <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground -mt-1">
-                B2B Surplus Exchange
-              </span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link
-              to="/catalog"
-              className="text-foreground/80 hover:text-primary transition-colors"
-            >
-              {t("nav.browse")}
-            </Link>
-            <Link
-              to="/how-it-works"
-              className="text-foreground/80 hover:text-primary transition-colors"
-            >
-              {t("nav.howItWorks")}
+    <>
+      <header className="sticky top-0 z-50 glass border-b border-border/40 transition-colors">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary to-accent flex items-center justify-center text-primary-foreground shadow-md shadow-primary/20 group-hover:scale-105 transition-transform">
+                <Layers className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-extrabold text-xl tracking-tight text-foreground bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  FabriLink
+                </span>
+                <span className="text-[10px] uppercase tracking-wider font-semibold text-muted-foreground -mt-1">
+                  B2B Surplus Exchange
+                </span>
+              </div>
             </Link>
 
-            {/* Role specific quick link */}
-            {isAuthenticated && user && (
+            {/* Desktop Navigation */}
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
               <Link
-                to={getDashboardPath()}
-                className="text-foreground/80 hover:text-primary transition-colors flex items-center gap-1.5 font-semibold text-primary"
+                to="/catalog"
+                className={`transition-colors ${
+                  location.pathname === "/catalog" ? "text-primary font-bold" : "text-foreground/80 hover:text-primary"
+                }`}
               >
-                {user.role === "FACTORY" && <Factory className="w-4 h-4" />}
-                {user.role === "BUYER" && <ShoppingBag className="w-4 h-4" />}
-                {user.role === "HUB_STAFF" && <Scissors className="w-4 h-4" />}
-                {user.role === "ADMIN" && <ShieldCheck className="w-4 h-4" />}
-                {t("nav.dashboard")}
+                {t("nav.browse")}
               </Link>
-            )}
-          </nav>
+              <Link
+                to="/how-it-works"
+                className={`transition-colors ${
+                  location.pathname === "/how-it-works" ? "text-primary font-bold" : "text-foreground/80 hover:text-primary"
+                }`}
+              >
+                {t("nav.howItWorks")}
+              </Link>
 
-          {/* Actions: Language Toggle & User */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Language Switcher */}
-            <button
-              onClick={toggleLanguage}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border hover:bg-muted text-xs font-semibold text-foreground/80 transition-all"
-              title="Toggle Language / ভাষা পরিবর্তন"
-            >
-              <Globe className="w-3.5 h-3.5 text-primary" />
-              <span>{i18n.language === "bn" ? "বাংলা" : "English"}</span>
-            </button>
+              {/* Role specific quick link */}
+              {isAuthenticated && user && (
+                <Link
+                  to={getDashboardPath()}
+                  className={`flex items-center gap-1.5 font-bold transition-colors ${
+                    location.pathname.startsWith(getDashboardPath().split("/")[1])
+                      ? "text-primary"
+                      : "text-foreground/80 hover:text-primary"
+                  }`}
+                >
+                  {user.role === "FACTORY" && <Factory className="w-4 h-4 text-primary" />}
+                  {user.role === "BUYER" && <ShoppingBag className="w-4 h-4 text-primary" />}
+                  {user.role === "HUB_STAFF" && <Scissors className="w-4 h-4 text-primary" />}
+                  {user.role === "ADMIN" && <ShieldCheck className="w-4 h-4 text-primary" />}
+                  <span>{t("nav.dashboard")}</span>
+                </Link>
+              )}
+            </nav>
 
-            {isAuthenticated && user ? (
-              <div className="relative">
+            {/* Actions: Cart, Language Toggle & User */}
+            <div className="hidden md:flex items-center gap-3">
+              {/* Cart Drawer Toggle (Only for Buyer role or guest) */}
+              {(!user || user.role === "BUYER") && (
                 <button
-                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-medium transition-all"
+                  onClick={() => setCartOpen(true)}
+                  className="relative p-2.5 rounded-xl border border-border hover:bg-muted text-foreground/80 hover:text-primary transition-all"
+                  title="View Yardage Cart"
                 >
-                  <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px]">
-                    {user.profile?.first_name?.[0] || user.email[0].toUpperCase()}
-                  </div>
-                  <span className="font-semibold text-foreground max-w-[120px] truncate">
-                    {user.profile?.full_name || user.email}
-                  </span>
-                  <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  <ShoppingCart className="w-4 h-4" />
+                  {cartItemCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-primary text-primary-foreground text-[10px] font-extrabold flex items-center justify-center shadow-md animate-in zoom-in-50">
+                      {cartItemCount}
+                    </span>
+                  )}
                 </button>
+              )}
 
-                {userDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl bg-card border border-border shadow-xl py-1 z-50 text-sm">
-                    <div className="px-4 py-2 border-b border-border">
-                      <p className="font-semibold text-foreground truncate">
-                        {user.company?.name || user.email}
-                      </p>
-                      <p className="text-xs text-muted-foreground">
-                        Role: <span className="font-medium text-primary">{user.role}</span>
-                      </p>
+              {/* Language Switcher */}
+              <button
+                onClick={toggleLanguage}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border hover:bg-muted text-xs font-semibold text-foreground/80 transition-all"
+                title="Toggle Language / ভাষা পরিবর্তন"
+              >
+                <Globe className="w-3.5 h-3.5 text-primary" />
+                <span>{i18n.language === "bn" ? "বাংলা" : "English"}</span>
+              </button>
+
+              {isAuthenticated && user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                    className="flex items-center gap-2 pl-3 pr-2 py-1.5 rounded-xl border border-border bg-card hover:bg-muted text-xs font-medium transition-all"
+                  >
+                    <div className="w-6 h-6 rounded-full bg-primary/10 text-primary flex items-center justify-center font-bold text-[11px]">
+                      {user.profile?.first_name?.[0] || user.email[0].toUpperCase()}
                     </div>
-                    <Link
-                      to={getDashboardPath()}
-                      onClick={() => setUserDropdownOpen(false)}
-                      className="flex items-center gap-2 px-4 py-2 hover:bg-muted text-foreground"
-                    >
-                      <UserIcon className="w-4 h-4" />
-                      {t("nav.dashboard")}
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="w-full flex items-center gap-2 px-4 py-2 text-destructive hover:bg-destructive/10 text-left"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      {t("nav.logout")}
-                    </button>
-                  </div>
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-2">
-                <Link
-                  to="/login"
-                  className="px-4 py-2 text-sm font-medium text-foreground/90 hover:text-primary transition-colors"
-                >
-                  {t("nav.login")}
-                </Link>
-                <Link
-                  to="/register"
-                  className="px-4 py-2 text-sm font-semibold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20 transition-all"
-                >
-                  {t("nav.register")}
-                </Link>
-              </div>
-            )}
-          </div>
+                    <span className="font-semibold text-foreground max-w-[120px] truncate">
+                      {user.profile?.full_name || user.email}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-primary/10 text-primary">
+                      {user.role}
+                    </span>
+                    <ChevronDown className="w-3.5 h-3.5 text-muted-foreground" />
+                  </button>
+
+                  {userDropdownOpen && (
+                    <div className="absolute right-0 mt-2 w-56 rounded-xl bg-card border border-border shadow-xl py-1 z-50 text-sm">
+                      <div className="px-4 py-2 border-b border-border">
+                        <p className="font-semibold text-foreground truncate">
+                          {user.company?.name || user.email}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Role: <span className="font-medium text-primary">{user.role}</span>
+                        </p>
+                      </div>
+                      <Link
+                        to={getDashboardPath()}
+                        onClick={() => setUserDropdownOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-muted text-foreground text-xs"
+                      >
+                        <UserIcon className="w-4 h-4" />
+                        {t("nav.dashboard")}
+                      </Link>
+                      <button
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-destructive hover:bg-destructive/10 text-left text-xs"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        {t("nav.logout")}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <Link
+                    to="/login"
+                    className="px-4 py-2 text-xs font-semibold text-foreground/90 hover:text-primary transition-colors"
+                  >
+                    {t("nav.login")}
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="px-4 py-2 text-xs font-bold text-primary-foreground bg-primary hover:bg-primary/90 rounded-xl shadow-md shadow-primary/20 transition-all"
+                  >
+                    {t("nav.register")}
+                  </Link>
+                </div>
+              )}
+            </div>
+
 
           {/* Mobile menu toggle button */}
           <div className="md:hidden flex items-center gap-2">
@@ -254,5 +307,18 @@ export const Navbar: React.FC = () => {
         </div>
       )}
     </header>
-  );
+
+    {/* Cart Drawer */}
+    <CartDrawer
+      isOpen={cartOpen}
+      onClose={() => {
+        setCartOpen(false);
+        fetchCartCount();
+      }}
+      onCartUpdated={fetchCartCount}
+    />
+  </>
+);
 };
+
+

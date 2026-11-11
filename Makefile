@@ -1,6 +1,10 @@
 .PHONY: help install dev test lint migrate seed up down logs clean frontend-install frontend-dev
 
-PYTHON ?= python3
+VENV ?= .venv
+PYTHON ?= $(shell if [ -f $(VENV)/bin/python ]; then echo $(VENV)/bin/python; else echo python3; fi)
+PYTEST ?= $(shell if [ -f $(VENV)/bin/pytest ]; then echo $(VENV)/bin/pytest; else echo pytest; fi)
+RUFF ?= $(shell if [ -f $(VENV)/bin/ruff ]; then echo $(VENV)/bin/ruff; else echo ruff; fi)
+BLACK ?= $(shell if [ -f $(VENV)/bin/black ]; then echo $(VENV)/bin/black; else echo black; fi)
 UV ?= uv
 
 help:
@@ -25,22 +29,22 @@ frontend-install:
 	cd frontend && npm install
 
 migrate:
-	cd backend && $(PYTHON) manage.py migrate
+	$(PYTHON) backend/manage.py migrate
 
 seed:
-	cd backend && $(PYTHON) manage.py seed_demo
+	$(PYTHON) backend/manage.py seed_demo
 
 dev:
-	cd backend && $(PYTHON) manage.py runserver 0.0.0.0:8000
+	$(PYTHON) backend/manage.py runserver 0.0.0.0:8000
 
 frontend-dev:
 	cd frontend && npm run dev
 
 test:
-	cd backend && pytest
+	$(PYTEST)
 
 lint:
-	cd backend && ruff check . && black --check . && mypy .
+	$(RUFF) check backend && $(BLACK) --check backend
 
 up:
 	docker compose up --build -d

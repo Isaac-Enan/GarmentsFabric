@@ -15,13 +15,27 @@ const queryClient = new QueryClient({
 });
 
 const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { setAuth, setInitialized, setAccessToken, clearAuth } = useAuthStore();
+  const { setAuth, setInitialized, setAccessToken, clearAuth, accessToken } = useAuthStore();
 
   useEffect(() => {
     let mounted = true;
 
     const restoreSession = async () => {
       try {
+        // If we have an existing accessToken from localStorage, try to fetch current user profile
+        if (accessToken) {
+          try {
+            const user = await authApi.getMe();
+            if (mounted) {
+              setAuth(user, accessToken);
+              setInitialized(true);
+              return;
+            }
+          } catch {
+            // Token expired or invalid, try refresh
+          }
+        }
+
         const refreshData = await authApi.refreshToken();
         if (refreshData?.access_token && mounted) {
           setAccessToken(refreshData.access_token);
@@ -31,7 +45,7 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
           }
         }
       } catch {
-        if (mounted) {
+        if (mounted && !accessToken) {
           clearAuth();
         }
       } finally {
@@ -50,6 +64,7 @@ const AuthInitializer: React.FC<{ children: React.ReactNode }> = ({ children }) 
 
   return <>{children}</>;
 };
+
 
 export const AppProviders: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (

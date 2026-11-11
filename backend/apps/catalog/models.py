@@ -105,6 +105,25 @@ class FabricRoll(UUIDModel, TimeStampedModel, SoftDeleteModel):
     is_sample_available = models.BooleanField(default=True)
     sample_price = models.DecimalField(max_digits=8, decimal_places=2, default=150.00)
 
+    # Custom Fabric Profile built by factory for a specific buyer
+    target_buyer = models.ForeignKey(
+        Company,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="custom_fabric_profiles",
+        help_text="If set, this fabric profile is built specifically for this buyer.",
+    )
+    is_custom_profile = models.BooleanField(
+        default=False,
+        db_index=True,
+        help_text="Indicates if this roll was built as a custom fabric profile for a buyer.",
+    )
+    buyer_spec_notes = models.TextField(
+        blank=True,
+        help_text="Custom specifications, yarn details, or merchandiser notes for the target buyer.",
+    )
+
     class Meta:
         verbose_name = "Fabric Roll"
         verbose_name_plural = "Fabric Rolls"

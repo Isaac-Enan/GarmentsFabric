@@ -58,3 +58,14 @@ class IsVerifiedCompany(BasePermission):
             first_co = company.first()
             return first_co is not None and first_co.verification_status == "APPROVED"
         return False
+
+
+class CanBuildFabricProfileForBuyer(BasePermission):
+    """Allows Factory users and Central Admins to build custom fabric profiles for buyers."""
+
+    def has_permission(self, request, view):
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and (request.user.role in ["FACTORY", "ADMIN"] or request.user.is_staff)
+        )

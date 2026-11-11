@@ -16,6 +16,8 @@ import {
   FileText,
   BadgeCheck,
   Check,
+  Sparkles,
+  Building,
 } from "lucide-react";
 import { apiClient } from "@/api/client";
 import { useAuthStore } from "@/features/auth/store";
@@ -28,6 +30,7 @@ interface FabricRollDetail {
   category_name: string;
   fabric_type_name: string;
   mill_name: string;
+  factory_id?: string;
   mill_location: string;
   mill_contact_phone: string;
   composition: string;
@@ -47,6 +50,10 @@ interface FabricRollDetail {
   status: string;
   is_sample_available: boolean;
   sample_price: string | number;
+  is_custom_profile?: boolean;
+  target_buyer_name?: string;
+  target_buyer_id?: string;
+  buyer_spec_notes?: string;
   images: Array<{ id: string; image_url: string; is_primary: boolean }>;
 }
 
@@ -188,7 +195,10 @@ export const FabricDetailPage: React.FC = () => {
     }
   };
 
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const primaryImage =
+    selectedImage ||
     roll.images.find((img) => img.is_primary)?.image_url ||
     roll.images[0]?.image_url ||
     "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1200&q=80";
@@ -206,6 +216,36 @@ export const FabricDetailPage: React.FC = () => {
         <span>/</span>
         <span className="font-semibold text-foreground truncate">{roll.roll_code}</span>
       </nav>
+
+      {/* Exclusive Profile VIP Banner */}
+      {roll.is_custom_profile && (
+        <div className="p-5 rounded-3xl bg-gradient-to-r from-purple-500/15 via-purple-600/10 to-indigo-500/15 border-2 border-purple-500/30 flex items-start sm:items-center gap-4 shadow-sm">
+          <div className="p-3 rounded-2xl bg-purple-600 text-white shrink-0 shadow-md shadow-purple-500/30">
+            <Sparkles className="w-6 h-6" />
+          </div>
+          <div className="flex-1">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="text-[10px] font-black px-2.5 py-0.5 rounded-full bg-purple-600 text-white uppercase tracking-wider">
+                Exclusive Fabric Profile
+              </span>
+              {roll.target_buyer_name && (
+                <span className="text-xs text-purple-700 dark:text-purple-300 font-bold">
+                  Formulated Specifically for {roll.target_buyer_name}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-foreground/80 mt-1 leading-relaxed">
+              This surplus roll was custom formulated and reserved by <strong>{roll.mill_name}</strong>. It includes priority hub receiving and customized precision cutting.
+            </p>
+            {roll.buyer_spec_notes && (
+              <div className="mt-2 text-xs bg-purple-500/10 border border-purple-500/20 rounded-xl p-3 text-foreground/90 font-mono">
+                <span className="font-bold text-purple-600 dark:text-purple-400">Merchandiser Formulation Note: </span>
+                {roll.buyer_spec_notes}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left 7 Columns: Product Gallery, Specs, Mill Details */}
@@ -230,6 +270,42 @@ export const FabricDetailPage: React.FC = () => {
                 {roll.roll_code}
               </div>
             </div>
+
+            {/* Multiple Photos Thumbnails */}
+            {roll.images && roll.images.length > 1 && (
+              <div className="px-5 py-3 bg-muted/40 border-t border-border flex items-center gap-2.5 overflow-x-auto">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1 shrink-0">
+                  Views ({roll.images.length}):
+                </span>
+                {roll.images.map((img, idx) => {
+                  const isActive = primaryImage === img.image_url;
+                  return (
+                    <button
+                      key={img.id || idx}
+                      type="button"
+                      onClick={() => setSelectedImage(img.image_url)}
+                      className={`relative w-16 h-12 rounded-xl overflow-hidden border-2 transition-all shrink-0 focus:outline-none ${
+                        isActive
+                          ? "border-primary ring-2 ring-primary/40 shadow-sm scale-105"
+                          : "border-border hover:border-foreground/50 opacity-70 hover:opacity-100"
+                      }`}
+                      title={img.is_primary ? "Primary View" : `View Angle ${idx + 1}`}
+                    >
+                      <img
+                        src={img.image_url}
+                        alt={`Fabric view ${idx + 1}`}
+                        className="w-full h-full object-cover"
+                      />
+                      {img.is_primary && (
+                        <span className="absolute bottom-0.5 left-0.5 text-[8px] font-extrabold bg-black/70 text-white px-1 py-0.2 rounded">
+                          Main
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
             {/* Color Swatch Bar */}
             <div className="p-5 bg-card border-t border-border flex items-center justify-between">
@@ -270,6 +346,17 @@ export const FabricDetailPage: React.FC = () => {
               <div className="p-4 rounded-xl bg-muted/40 border border-border/80 text-xs text-foreground/80 leading-relaxed">
                 <span className="font-bold text-foreground">Factory Inspection Log: </span>
                 {roll.defect_notes}
+              </div>
+            )}
+            {roll.factory_id && (
+              <div className="pt-2 border-t border-border/60">
+                <Link
+                  to={`/stores/${roll.factory_id}`}
+                  className="inline-flex items-center gap-2 text-xs font-bold text-primary hover:underline"
+                >
+                  <Building className="w-4 h-4" />
+                  <span>Visit {roll.mill_name} Storefront & All Inventory →</span>
+                </Link>
               </div>
             )}
           </div>

@@ -11,6 +11,8 @@ import {
   Scissors,
   Users,
   Settings,
+  Sparkles,
+  Factory,
   AlertTriangle,
 } from "lucide-react";
 
@@ -27,10 +29,14 @@ export const DashboardLayout: React.FC = () => {
           { name: "My Fabric Stock", path: "/factory/stock", icon: Layers },
           { name: "Pickup Schedules", path: "/factory/pickups", icon: Truck },
           { name: "Payouts & Ledger", path: "/factory/payouts", icon: CreditCard },
+          ...(user?.company?.id
+            ? [{ name: "My Storefront", path: `/stores/${user.company.id}`, icon: Factory }]
+            : []),
         ];
       case "BUYER":
         return [
           { name: "My Orders", path: "/buyer/orders", icon: LayoutDashboard },
+          { name: "Exclusive Profiles", path: "/buyer/profiles", icon: Sparkles },
           { name: "Browse Surplus", path: "/catalog", icon: Layers },
           { name: "Custom Requests", path: "/buyer/requests", icon: FileCheck },
           { name: "B2B Credit Line", path: "/buyer/credit", icon: CreditCard },

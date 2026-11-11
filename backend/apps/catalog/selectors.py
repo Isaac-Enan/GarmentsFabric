@@ -1,13 +1,13 @@
-from django.db.models import QuerySet
+from django.db.models import Q, QuerySet
 
 from .models import FabricCategory, FabricRoll
 
 
 def get_fabric_roll_by_id(roll_id: str) -> FabricRoll | None:
-    """Retrieves a single fabric roll with related mill, type, address, and images."""
+    """Retrieves a single fabric roll with related mill, type, address, target buyer, and images."""
     return (
         FabricRoll.objects.select_related(
-            "factory", "fabric_type", "fabric_type__category", "location_address"
+            "factory", "fabric_type", "fabric_type__category", "location_address", "target_buyer"
         )
         .prefetch_related("images")
         .filter(id=roll_id, is_deleted=False)
@@ -27,24 +27,54 @@ def list_fabric_rolls(
     min_yards: float | None = None,
     max_price: float | None = None,
     factory_id: str | None = None,
+    target_buyer_id: str | None = None,
+    custom_only: bool = False,
+    buyer_access_id: str | None = None,
+    is_owner: bool = False,
 ) -> QuerySet[FabricRoll]:
-    """Filters active surplus rolls."""
+    """Filters active surplus rolls and custom fabric profiles."""
     qs = (
-        FabricRoll.objects.select_related("factory", "fabric_type", "location_address")
+        FabricRoll.objects.select_related(
+            "factory", "fabric_type", "location_address", "target_buyer"
+        )
         .prefetch_related("images")
         .filter(is_deleted=False)
     )
 
     if factory_id:
         qs = qs.filter(factory_id=factory_id)
+        if not is_owner:
+            qs = qs.filter(status__in=["ACTIVE", "RESERVED_PARTIAL"], available_yards__gt=0)
+            if custom_only and buyer_access_id:
+                qs = qs.filter(is_custom_profile=True, target_buyer_id=buyer_access_id)
+            elif buyer_access_id:
+                qs = qs.filter(Q(target_buyer__isnull=True) | Q(target_buyer_id=buyer_access_id))
+            else:
+                qs = qs.filter(target_buyer__isnull=True)
+        else:
+            if target_buyer_id:
+                qs = qs.filter(target_buyer_id=target_buyer_id)
+            if custom_only:
+                qs = qs.filter(is_custom_profile=True)
     else:
-        qs = qs.filter(status="ACTIVE")
+        qs = qs.filter(status__in=["ACTIVE", "RESERVED_PARTIAL"], available_yards__gt=0)
+        if target_buyer_id:
+            qs = qs.filter(target_buyer_id=target_buyer_id)
+        elif custom_only and buyer_access_id:
+            qs = qs.filter(is_custom_profile=True, target_buyer_id=buyer_access_id)
+        elif buyer_access_id:
+            # Show public surplus rolls AND custom profiles built specifically for this buyer
+            qs = qs.filter(Q(target_buyer__isnull=True) | Q(target_buyer_id=buyer_access_id))
+        else:
+            # Anonymous / general view: only public rolls
+            qs = qs.filter(target_buyer__isnull=True)
 
     if search:
         qs = (
             qs.filter(title__icontains=search)
             | qs.filter(composition__icontains=search)
             | qs.filter(roll_code__icontains=search)
+            | qs.filter(buyer_spec_notes__icontains=search)
         )
 
     if fabric_type:
